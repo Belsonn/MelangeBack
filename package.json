@@ -16,5 +16,10 @@
   "bugs": {
     "url": "https://github.com/Belsonn/NWTA-Back/issues"
   },
-  "homepage": "https://github.com/Belsonn/NWTA-Back#readme"
+  "homepage": "https://github.com/Belsonn/NWTA-Back#readme",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "mongoose": "^5.10.9"
+  }
 }
