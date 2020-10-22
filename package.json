@@ -1,0 +1,20 @@
+{
+  "name": "nwta-back",
+  "version": "1.0.0",
+  "description": "NWTA-Project",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Belsonn/NWTA-Back.git"
+  },
+  "author": "KS, KS, MB, AW",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Belsonn/NWTA-Back/issues"
+  },
+  "homepage": "https://github.com/Belsonn/NWTA-Back#readme"
+}
