@@ -3,7 +3,7 @@ const melangeProductSchema = new mongoose.Schema({
   users: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "MelangeUser",
       default: []
     }
   ],
@@ -13,13 +13,13 @@ const melangeProductSchema = new mongoose.Schema({
   },
   paidBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Users"
+    ref: "MelangeUser"
   }
 });
 
 melangeProductSchema.pre(/^find/, function (next) {
   this.populate({
-    path: "product users users",
+    path: "product users PaidBy",
     select: "-__v -email"
   })
   next();

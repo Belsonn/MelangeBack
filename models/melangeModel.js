@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const crypto = require('crypto');
 
 const melangeSchema = new mongoose.Schema({
   name: {
@@ -28,6 +28,27 @@ const melangeSchema = new mongoose.Schema({
       uppercase: true
   }
   
+});
+
+
+melangeSchema.pre(/^find/, function (next) {
+  this.select("-__v");
+  // this.populate({
+  //     path: 'users',
+  //     select: '_id name'
+  // })
+  this.populate({
+    path: "products users",
+    select: "-__v -email",
+  });
+  next();
+});
+melangeSchema.pre("save", function (next) {
+  if (this.isNew) {
+    this.createdAt = Date.now();
+    this.inviteToken = crypto.randomBytes(3).toString('hex');
+  }
+  next();
 });
 
 const Melange = mongoose.model("Melange", melangeSchema);
