@@ -41,7 +41,19 @@ exports.deleteProduct = async (req, res, next) => {
     return next(new GlobalError("No product found with that id."));
   }
   res.status(204).json({
-      status: "success",
-      data: null
-  })
+    status: "success",
+    data: null,
+  });
+};
+
+exports.getMyProducts = async (req, res, next) => {
+  const products = await Product.find({ createdBy: req.user.id });
+
+  res.status(200).json({
+    status: "success",
+    results: products.length,
+    data: {
+      products,
+    },
+  });
 };
