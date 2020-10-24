@@ -1,9 +1,5 @@
 const mongoose = require("mongoose");
 
-<<<<<<< HEAD
-=======
-
->>>>>>> Kamil
 
 const melangeSchema = new mongoose.Schema({
   name: {
@@ -34,11 +30,6 @@ const melangeSchema = new mongoose.Schema({
   
 });
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> Kamil
 const Melange = mongoose.model("Melange", melangeSchema);
 
 module.exports = Melange;
