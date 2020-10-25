@@ -8,8 +8,9 @@ const melangeProductSchema = new mongoose.Schema({
     }
   ],
   product: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Product",
+    name: String,
+      price: Number,
+      shop: String
   },
   paidBy: {
     type: mongoose.Schema.Types.ObjectId,
