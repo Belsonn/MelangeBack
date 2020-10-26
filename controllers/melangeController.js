@@ -65,6 +65,52 @@ exports.getMyMelanges = async (req, res, next) => {
   });
 };
 
+exports.createTemporaryUser = async (req, res, next) => {
+  const user = await User.findOne({ name: req.body.name });
+
+  let melange = await Melange.findById(req.body.melange);
+
+  let alreadyExists = false;
+  
+  melange.users.forEach(user => {
+    if(user.user.name == req.body.name){
+      alreadyExists = true;
+      return;
+    }
+  })
+
+  if (user || alreadyExists) {
+    return next(new globalError("User with this name already exists", 400));
+  }
+
+  const tempUser = await MelangeUser.create({
+    user: {
+      name: req.body.name, 
+      _id: 'temp'+mongoose.Types.ObjectId()
+    },
+    melange: req.body.melange,
+  });
+
+  if (!tempUser) {
+    return next(new globalError("Something went wrong", 500));
+  }
+
+  melange = await Melange.findByIdAndUpdate(
+    req.body.melange,
+    { $push: { users: tempUser._id } },
+    {
+      new: true,
+    }
+  );
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      melange,
+    },
+  });
+};
+
 exports.deleteMelange = async (req, res, next) => {
   const melange = await Melange.findByIdAndDelete(req.params.id);
   melange.users.forEach(async user =>{
