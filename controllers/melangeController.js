@@ -64,3 +64,19 @@ exports.getMyMelanges = async (req, res, next) => {
     },
   });
 };
+
+exports.deleteMelange = async (req, res, next) => {
+  const melange = await Melange.findByIdAndDelete(req.params.id);
+  melange.users.forEach(async user =>{
+    await MelangeUser.findByIdAndDelete(user._id);
+  })
+  
+  melange.products.forEach(async product =>{
+    await MelangeProduct.findByIdAndDelete(product._id);
+  })
+
+  res.status(204).json({
+    status: "success",
+    data: null
+  })
+}
