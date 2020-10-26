@@ -76,6 +76,25 @@ exports.login = async (req, res, next) => {
   createSendToken(user, 200, res);
 };
 
+exports.activateAccount = async (req, res, next) => {
+  let user = await User.findOne({ activationToken: req.body.activationToken });
+
+  console.log(req.body.activationToken);
+
+  if (!user) {
+    return next(new globalError("Provided wrong activationToken", 404));
+  }
+
+  user = await User.findByIdAndUpdate(
+    user._id,
+    { active: true, activationToken: undefined },
+    { new: true }
+  );
+
+  createSendToken(user, 200, res);
+};
+
+
 exports.protect = async (req, res, next) => {
   let token;
   if (
