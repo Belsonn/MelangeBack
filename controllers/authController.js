@@ -52,7 +52,38 @@ exports.signup = async (req, res, next) => {
   const activateToken = newUser.createActivationToken();
   await newUser.save({ validateBeforeSave: false });
 
-  createSendToken(user, 200, res);
+  let activationUrl;
+
+  if (process.env.NODE_ENV == "development") {
+
+    activationUrl = `${process.env.FRONT_URL_DEV}activate/${activateToken}`;
+    
+    console.log(activationUrl);
+    console.log(newUser);
+
+  } else if(process.env.NODE_ENV =='production') {
+
+    activationUrl = `${process.env.FRONT_URL}activate/${activateToken}`;
+
+  }
+
+  try {
+    await new Email(newUser, activationUrl).send();
+
+    res.status(200).json({
+      status: "success",
+      message: "Token sent to email",
+    });
+  } catch (err) {
+
+    console.log(err);
+
+    newUser.activationToken = undefined;
+
+    await newUser.save({ validateBeforeSave: false });
+
+    return next(new globalError("There was an error sending the mail", 500));
+  }
 };
 
 exports.login = async (req, res, next) => {
