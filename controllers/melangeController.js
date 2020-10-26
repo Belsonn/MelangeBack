@@ -25,6 +25,43 @@ exports.getMelange = async (req, res, next) => {
   });
 };
 
+exports.joinMelange = async (req, res, next) => {
+  let melange = await Melange.findOne({ inviteToken: req.body.inviteToken });
+
+  if (!melange) {
+    return next(new globalError("No melange found.", 404));
+  }
+
+  if (melange.users.find((el) => el.user._id == req.user.id)) {
+    return next(new globalError("You joined this melange already", 400));
+  }
+
+  const user = await User.findById(req.user.id)
+
+  const melangeUser = await MelangeUser.create({
+    melange: melange._id,
+    user: {
+      name: user.name, 
+      _id: user._id
+    },
+  });
+
+  melange = await Melange.findByIdAndUpdate(
+    melange.id,
+    { $push: { users: melangeUser.id } },
+    {
+      new: true,
+    }
+  );
+  
+  res.status(200).json({
+    status: "success",
+    data: {
+      melange,
+    },
+  });
+};
+
 exports.getAllMelanges = async (req, res, next) => {
   const melanges = await Melange.find();
 

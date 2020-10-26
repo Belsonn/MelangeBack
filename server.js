@@ -10,17 +10,25 @@ process.on("uncaughtException", (err) => {
 
 dotenv.config({ path: "./config.env" });
 
-mongoose
-  .connect(process.env.DATABASE_URL, {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("DB Connection successful!"))
-  .catch((err) => {
-    console.log(err);
-  });
+const connectDb = (url) => {
+  mongoose
+    .connect(url, {
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
+      useUnifiedTopology: true,
+    })
+    .then(() => console.log("DB Connection successful!"))
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
+if (process.env.NODE_ENV == "development") {
+  connectDb(process.env.DATABASE_DEV);
+} else {
+  connectDb(process.env.DATABASE);
+}
 
 const port = process.env.PORT;
 
