@@ -1,5 +1,5 @@
 const Product = require("./../models/productsModel");
-const globalError = require("./../utils/globalError");
+const GlobalError = require("./../utils/globalError");
 const filterObject = require("./../utils/filterObj");
 
 exports.createProduct = async (req, res, next) => {
