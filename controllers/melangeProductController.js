@@ -57,6 +57,90 @@ exports.createMelangeProduct = async (req, res, next) => {
     },
   });
 };
+
+exports.updateMelangeProduct = async (req, res, next) => {
+  let userBuy = [];
+  let melangeUsers = [];
+
+  req.body.melangeUsers.forEach((melangeUser) => {
+    req.body.users.find((user) => {
+      if (user == melangeUser.user.name) {
+        melangeUsers.push(melangeUser);
+      }
+    });
+  });
+
+  req.body.users = melangeUsers;
+
+  req.body.users.forEach((user) => {
+    userBuy.push(user._id);
+  });
+
+  req.body.paidBy = req.body.melangeUsers.find((user) => {
+    return user.user.name == req.body.paidBy;
+  });
+
+  let oldProduct = await MelangeProduct.findById(
+    req.body.melangeProductToUpdate
+  );
+
+  const oldFullPrice = req.body.oldPrice;
+  const oldPriceForOne = req.body.oldPrice / oldProduct.users.length;
+
+  oldProduct.users.forEach(async (user) => {
+    let melangeUser = await MelangeUser.findById(user._id);
+    melangeUser = await MelangeUser.findByIdAndUpdate(user._id, {
+      expenses: melangeUser.expenses - oldPriceForOne,
+    });
+  });
+  let paidBy = await MelangeUser.findById(oldProduct.paidBy._id);
+  paidBy = await MelangeUser.findByIdAndUpdate(oldProduct.paidBy._id, {
+    incomes: paidBy.incomes - oldFullPrice,
+  });
+
+  const newProduct = await MelangeProduct.findByIdAndUpdate(
+    req.body.melangeProductToUpdate,
+    {
+      users: userBuy,
+      product: {
+        name: req.body.newProduct.name,
+        price: req.body.newProduct.price,
+        shop: req.body.newProduct.shop,
+      },
+      paidBy: req.body.paidBy._id,
+    },
+    { new: true }
+  );
+
+  const fullPrice = req.body.newProduct.price;
+  const priceforOne = req.body.newProduct.price / req.body.users.length;
+
+  let newPaidBy = await MelangeUser.findById(req.body.paidBy._id);
+  newPaidBy = await MelangeUser.findByIdAndUpdate(req.body.paidBy._id, {
+    incomes: newPaidBy.incomes + fullPrice,
+  });
+
+  req.body.users.forEach(async (el) => {
+    let user = await MelangeUser.findById(el._id);
+    user = await MelangeUser.findByIdAndUpdate(
+      el._id,
+      {
+        expenses: user.expenses + priceforOne,
+      },
+      { new: true }
+    );
+  });
+
+  const melange = await Melange.findById(req.body.melangeId);
+
+  res.status(201).json({
+    status: "success",
+    data: {
+      melange,
+    },
+  });
+};
+
 exports.getMelangeProduct = async (req, res, next) => {
   const product = await melangeProduct.findById(req.params.id);
   if (!product) {
