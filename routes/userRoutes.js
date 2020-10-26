@@ -10,9 +10,10 @@ router.use(authController.protect);
 router
   .route("/me")
   .get(userController.getMe, userController.getUser);
-router
+  router
   .route("/:id")
   .get(userController.getUser)
+  .delete(userController.deleteUser);
 router.route("/").get(userController.getAllUsers);
 
 module.exports = router;

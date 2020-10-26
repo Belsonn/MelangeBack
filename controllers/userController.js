@@ -33,3 +33,16 @@ exports.getAllUsers = async (req, res, next) => {
         }
     })
 }
+
+exports.deleteUser = async (req, res, next) => {
+  const user = await User.findByIdAndDelete(req.params.id);
+
+  if (!user) {
+    return next(new globalError("There are no users with that ID", 404));
+  }
+  
+  res.status(204).json({
+    status: "success",
+    data: null,
+  });
+};
