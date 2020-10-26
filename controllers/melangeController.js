@@ -1,42 +1,15 @@
 const Melange = require("./../models/melangeModel");
 const globalError = require("./../utils/globalError");
+const MelangeUser = require("./../models/melangeUserModel");
+const MelangeProduct = require("./../models/melangeProductModel")
+const User = require("./../models/userModel");
+const mongoose = require("mongoose");
+
 
 exports.createMelange = async (req, res, next) => {
-  const melange = await Melange.create(req.body);
+  let melange = await Melange.create(req.body);
 
-  res.status(201).json({
-    status: "success",
-    data: {
-      melange,
-    },
-  });
-};
-
-exports.getMelange = async (req, res, next) => {
-  const melange = await Melange.findById(req.params.id);
-  if (!melange) {
-    return next(new globalError("No melange found", 404));
-  }
-  res.status(200).json({
-    status: "success",
-    data: {
-      melange,
-    },
-  });
-};
-
-exports.joinMelange = async (req, res, next) => {
-  let melange = await Melange.findOne({ inviteToken: req.body.inviteToken });
-
-  if (!melange) {
-    return next(new globalError("No melange found.", 404));
-  }
-
-  if (melange.users.find((el) => el.user._id == req.user.id)) {
-    return next(new globalError("You joined this melange already", 400));
-  }
-
-  const user = await User.findById(req.user.id)
+  const user = await User.findById(req.user.id);
 
   const melangeUser = await MelangeUser.create({
     melange: melange._id,
@@ -49,11 +22,30 @@ exports.joinMelange = async (req, res, next) => {
   melange = await Melange.findByIdAndUpdate(
     melange.id,
     { $push: { users: melangeUser.id } },
-    {
-      new: true,
-    }
+    { new: true }
   );
-  
+
+  res.status(201).json({
+    status: "success",
+    data: {
+      melange,
+    },
+  });
+};
+
+exports.getMelange = async (req, res, next) => {
+  const melange = await Melange.findById(req.params.id);
+
+  if (!melange) {
+    return next(new globalError("No melange found", 404));
+  }
+
+  const allow = melange.users.filter((e) => e._id === req.user.id);
+
+  if (!allow) {
+    return next(new globalError("You have no permission", 401));
+  }
+
   res.status(200).json({
     status: "success",
     data: {
@@ -79,7 +71,7 @@ exports.getAllMelanges = async (req, res, next) => {
 };
 
 exports.getMyMelanges = async (req, res, next) => {
-  const melangeUser = await MelangeUser.find({ "user._id": req.user.id });
+  const melangeUser = await MelangeUser.find({"user._id": req.user.id});
 
   let ids = [];
 
@@ -140,6 +132,43 @@ exports.createTemporaryUser = async (req, res, next) => {
     }
   );
 
+  res.status(200).json({
+    status: "success",
+    data: {
+      melange,
+    },
+  });
+};
+
+exports.joinMelange = async (req, res, next) => {
+  let melange = await Melange.findOne({ inviteToken: req.body.inviteToken });
+
+  if (!melange) {
+    return next(new globalError("No melange found.", 404));
+  }
+
+  if (melange.users.find((el) => el.user._id == req.user.id)) {
+    return next(new globalError("You joined this melange already", 400));
+  }
+
+  const user = await User.findById(req.user.id)
+
+  const melangeUser = await MelangeUser.create({
+    melange: melange._id,
+    user: {
+      name: user.name, 
+      _id: user._id
+    },
+  });
+
+  melange = await Melange.findByIdAndUpdate(
+    melange.id,
+    { $push: { users: melangeUser.id } },
+    {
+      new: true,
+    }
+  );
+  
   res.status(200).json({
     status: "success",
     data: {

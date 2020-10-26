@@ -1,7 +1,8 @@
-const melangeProduct = require("./../models/melangeProductModel");
+const MelangeProduct = require("./../models/melangeProductModel");
 const globalError = require("./../utils/globalError");
 const Melange = require("./../models/melangeModel");
 const MelangeUser = require("./../models/melangeUserModel");
+const User = require("./../models/userModel");
 
 exports.createMelangeProduct = async (req, res, next) => {
   let ids = [];
@@ -160,10 +161,12 @@ exports.updateMelangeProduct = async (req, res, next) => {
 };
 
 exports.getMelangeProduct = async (req, res, next) => {
-  const product = await melangeProduct.findById(req.params.id);
+  const product = await MelangeProduct.findById(req.params.id);
+
   if (!product) {
     return next(new globalError("No product found with that id", 404));
   }
+
   res.status(200).json({
     status: "success",
     data: {
@@ -171,13 +174,16 @@ exports.getMelangeProduct = async (req, res, next) => {
     },
   });
 };
+
 exports.getAllMelangeProducts = async (req, res, next) => {
-  const products = await melangeProduct.find();
+  const products = await MelangeProduct.find();
+
   if (!products) {
     return next(
       new globalError("There are no products, try to create a new one", 404)
     );
   }
+
   res.status(200).json({
     status: "success",
     results: products.length,
@@ -187,7 +193,7 @@ exports.getAllMelangeProducts = async (req, res, next) => {
   });
 };
 
-
+//byID
 exports.deleteMelangeProduct = async (req, res, next) => {
   const melangeProduct = await MelangeProduct.findByIdAndDelete(req.params.id);
 

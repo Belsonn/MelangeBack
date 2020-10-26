@@ -59,8 +59,6 @@ exports.signup = async (req, res, next) => {
 
     activationUrl = `${process.env.FRONT_URL_DEV}activate/${activateToken}`;
     
-    console.log(activationUrl);
-    console.log(newUser);
 
   } else if(process.env.NODE_ENV =='production') {
 
@@ -77,7 +75,6 @@ exports.signup = async (req, res, next) => {
     });
   } catch (err) {
 
-    console.log(err);
 
     newUser.activationToken = undefined;
 

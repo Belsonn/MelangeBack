@@ -20,7 +20,7 @@ const melangeProductSchema = new mongoose.Schema({
 
 melangeProductSchema.pre(/^find/, function (next) {
   this.populate({
-    path: "product users PaidBy",
+    path: "product users paidBy",
     select: "-__v -email"
   })
   next();

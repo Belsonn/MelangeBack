@@ -12,6 +12,11 @@ app.use(cors());
 dotenv.config({path: './config.env'});
 app.use(express.json());
 
+if(process.env.NODE_ENV=='development'){
+    const morgan = require('morgan')
+    app.use(morgan('dev'));
+  }
+  
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/product', productRouter);
 app.use('/api/v1/melange', melangeRouter)
