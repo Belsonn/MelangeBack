@@ -5,51 +5,69 @@ const MelangeUser = require("./../models/melangeUserModel");
 
 exports.createMelangeProduct = async (req, res, next) => {
   let ids = [];
+  let users = [];
+
+  req.body.melangeUsers.forEach((melangeUser) => {
+    req.body.users.find((user) => {
+      if (user == melangeUser.user.name) {
+        users.push(melangeUser);
+      }
+    });
+  });
+
+  req.body.users = users;
+
   req.body.users.forEach((user) => {
     ids.push(user._id);
   });
-  const product = await melangeProduct.create({
+
+  req.body.paidBy = req.body.melangeUsers.find((user) => {
+    return user.user.name == req.body.paidBy;
+  });
+
+  let product;
+
+  product = await MelangeProduct.create({
     users: ids,
-    product: req.body.product._id,
+    product: {
+      name: req.body.product.name,
+      price: req.body.product.price,
+      shop: req.body.product.shop,
+    },
     paidBy: req.body.paidBy._id,
   });
+
   const fullPrice = req.body.product.price;
   const priceforOne = req.body.product.price / req.body.users.length;
 
-  if (!ids.includes(req.body.paidBy._id)) {
-    const paidBy = await MelangeUser.findByIdAndUpdate(
-      req.body.paidBy._id,
-      { incomes: req.body.paidBy.incomes + fullPrice },
-      { new: true }
-    );
-  }
+  const paidBy = await MelangeUser.findByIdAndUpdate(
+    req.body.paidBy._id,
+    { incomes: req.body.paidBy.incomes + fullPrice },
+    { new: true }
+  );
+
   req.body.users.forEach(async (el) => {
     let user;
     user = await MelangeUser.findById(el._id);
-    if (el._id == req.body.paidBy._id) {
-      user = await MelangeUser.findByIdAndUpdate(
-        el._id,
-        {
-          expenses: user.expenses + priceforOne,
-          incomes: user.incomes + fullPrice,
-        },
-        { new: true }
-      );
-    } else {
-      user = await MelangeUser.findByIdAndUpdate(
-        el._id,
-        { expenses: user.expenses + priceforOne },
-        { new: true }
-      );
-    }
+    user = await MelangeUser.findByIdAndUpdate(
+      el._id,
+      {
+        expenses: user.expenses + priceforOne,
+      },
+      { new: true }
+    );
   });
-  let melange = await Melange.findByIdAndUpdate(
+
+  let melange;
+
+  melange = await Melange.findByIdAndUpdate(
     req.body.melangeId,
     { $push: { products: product } },
     {
       new: true,
     }
   );
+
   res.status(201).json({
     status: "success",
     data: {
@@ -168,16 +186,58 @@ exports.getAllMelangeProducts = async (req, res, next) => {
     },
   });
 };
+
+
 exports.deleteMelangeProduct = async (req, res, next) => {
-  const product = await melangeProduct.findByIdAndDelete(req.params.id);
-  if (!product) {
+  const melangeProduct = await MelangeProduct.findByIdAndDelete(req.params.id);
+
+  if (!melangeProduct) {
     return next(new globalError("No product found with that id", 404));
   }
+
+  const fullPrice = melangeProduct.product.price;
+  const priceforOne =
+    melangeProduct.product.price / melangeProduct.users.length;
+
+  let updatedUser;
+
+  if (
+    !melangeProduct.users.find((melangeUser) => {
+      return melangeUser._id == melangeProduct.paidBy._id;
+    })
+  ) {
+    updatedUser = await MelangeUser.findByIdAndUpdate(
+      melangeProduct.paidBy._id,
+      { incomes: melangeProduct.paidBy.incomes - fullPrice },
+      { new: true }
+    );
+  }
+
+  melangeProduct.users.forEach(async (user) => {
+    if (user._id == melangeProduct.paidBy._id) {
+      updatedUser = await MelangeUser.findByIdAndUpdate(
+        user._id,
+        {
+          incomes: user.incomes - fullPrice,
+          expenses: user.expenses - priceforOne,
+        },
+        { new: true }
+      );
+    } else {
+      updatedUser = await MelangeUser.findByIdAndUpdate(
+        user._id,
+        { expenses: user.expenses - priceforOne },
+        { new: true }
+      );
+    }
+  });
+
   const melange = await Melange.findOneAndUpdate(
-    { products: { $gte: product } },
-    { $pull: { products: { _id: product.id } } }
+    { products: { $gte: melangeProduct } },
+    { $pull: { products: { _id: melangeProduct._id } } }
   );
-  res.status(204).json({
+
+  res.status(200).json({
     status: "success",
     data: null,
   });
