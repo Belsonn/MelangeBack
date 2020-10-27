@@ -16,6 +16,13 @@ if(process.env.NODE_ENV=='development'){
     const morgan = require('morgan')
     app.use(morgan('dev'));
   }
+  console.log(process.cwd())
+
+  // DOCKER
+  app.use(express.static(process.cwd()+"/Front/dist/NWTA-Front/"))
+  app.get('/', (req,res) => {
+    res.sendFile(process.cwd()+"/Front/dist/NWTA-Front/index.html")
+  });
   
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/product', productRouter);
